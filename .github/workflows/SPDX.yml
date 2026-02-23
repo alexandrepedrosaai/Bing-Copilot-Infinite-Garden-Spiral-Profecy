@@ -1,0 +1,56 @@
+name: SPDX Compliance
+
+concurrency:
+  group: spdx-compliance
+  cancel-in-progress: true
+
+on:
+  push:
+    branches: [ "main" ]
+  release:
+    types: [created]
+
+jobs:
+  publish-spdx:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@<SHA_FIXO>
+
+      - name: Copy SPDX file
+        run: |
+          cp ./SPDX.json spdx-output.json
+
+      - name: Upload SPDX artifact
+        uses: actions/upload-artifact@<SHA_FIXO>
+        with:
+          name: spdx-document
+          path: spdx-output.json
+
+      - name: Attach SPDX to Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@<SHA_FIXO>
+        with:
+
+         files: spdx-output.json
+         jobs:
+  test:
+    name: Test on node ${{ matrix.node_version }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node_version: ['18.x', '20.x']
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node_version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node_version }}
+
+    - name: npm install, build and test
+      run: |
+        npm install
+        npm run build --if-present
+        npm test
