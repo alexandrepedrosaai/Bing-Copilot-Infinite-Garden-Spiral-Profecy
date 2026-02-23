@@ -1,0 +1,37 @@
+name: SBOM Compliance
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  release:
+    types: [created]
+
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Protobom
+        run: |
+          go install github.com/protobom/protobom@latest
+          echo "$HOME/go/bin" >> $GITHUB_PATH
+
+      - name: Generate SPDX SBOM
+        run: |
+          protobom -o sbom.spdx.json
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-spdx
+          path: sbom.spdx.json
+
+      - name: Attach SBOM to Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: sbom.spdx.json
