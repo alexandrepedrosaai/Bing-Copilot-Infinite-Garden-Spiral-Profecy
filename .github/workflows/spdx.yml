@@ -29,7 +29,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: spdx-output.json
-          {
+          
   "spdxVersion": "SPDX-2.3",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
