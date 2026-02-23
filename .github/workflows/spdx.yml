@@ -1,0 +1,31 @@
+concurrency: 
+name: SPDX Compliance
+
+on:
+  push:
+    branches: [ "main" ]
+  release:
+    types: [created]
+
+jobs:
+  publish-spdx:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy SPDX file
+        run: |
+          cp ./SPDX.json spdx-output.json
+
+      - name: Upload SPDX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spdx-document
+          path: spdx-output.json
+
+      - name: Attach SPDX to Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: spdx-output.json
